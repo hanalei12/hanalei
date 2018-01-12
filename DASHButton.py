@@ -2,7 +2,7 @@ from scapy.all import *
 import time
 import requests
 
-MAGIC_FORM_URL = 'https://api.cloudstitch.com/hanalei/hanalei-1/datasources/sheet'
+MAGIC_FORM_URL = 'https://api.cloudstitch.com/hanalei/hanalei-1/datasources/sheet' 
 
 def record():
 	data = {
