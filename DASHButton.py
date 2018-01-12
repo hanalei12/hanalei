@@ -11,7 +11,7 @@ def record():
 		# "Timestamp": time.strftime("%Y-%m-%d %H:%M"), 
 		"Action": 'LOG'
 	}
-	print str(data['FirstName']) + " " + str(data['LastName'])
+	print str(data['FirstName']) + str(data['LastName'])
 	# print str(data['Timestamp']) + " " + str(data['Action'])
 	requests.post(MAGIC_FORM_URL, data)
 	
