@@ -1,33 +1,18 @@
-from scapy.all import *
-import requests
-import time
-MAGIC_FORM_URL = 'https://api.cloudstitch.com/hanalei/hanalei-1/datasources/sheet'
-
-def record_poop():
-  data = {
-    "Timestamp": time.strftime("%Y-%m-%d %H:%M"), 
-    "Measurement": 'Poopy Diaper'
-  }
-  requests.post(MAGIC_FORM_URL, data)
-
-def record_wake():
-  data = {
-    "Timestamp": time.strftime("%Y-%m-%d %H:%M"), 
-    "Measurement": 'Woke from Sleep'
-  }
-  requests.post(MAGIC_FORM_URL, data)
-
-def arp_display(pkt):
-  timestamp = time.strftime("%Y-%m-%d %H:%M")
-  if pkt[ARP].op == 1: #who-has (request)
-    if pkt[ARP].psrc == '0.0.0.0': # ARP Probe
-      if pkt[ARP].hwsrc == '74:75:48:5f:99:30': # Huggies        
-        print "Pushed Huggies"
-        record_poop()
-      elif pkt[ARP].hwsrc == '10:ae:60:00:4d:f3': # Elements
-        print "Pushed Elements"
-        record_wake()
-      else:
-        print "ARP Probe from unknown device: " + pkt[ARP].hwsrc
-
-print sniff(prn=arp_display, filter="arp", store=0, count=10)
+import socket
+import struct
+import binascii
+rawSocket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+while True:
+packet = rawSocket.recvfrom(2048)
+ethernet_header = packet[0][0:14]
+ ethernet_detailed = struct.unpack(“!6s6s2s”, ethernet_header)
+arp_header = packet[0][14:42]
+ arp_detailed = struct.unpack(“2s2s1s1s2s6s4s6s4s”, arp_header)
+# skip non-ARP packets
+ ethertype = ethernet_detailed[2]
+ if ethertype != ‘\x08\x06’:
+ continue
+source_mac = binascii.hexlify(arp_detailed[5])
+ dest_ip = socket.inet_ntoa(arp_detailed[8])
+if source_mac == ‘74c24671971c’:
+ print “Tide button pressed!, IP = “ + dest_ip
